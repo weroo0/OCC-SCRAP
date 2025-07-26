@@ -15,6 +15,11 @@
       <button onclick="render('mayor')" class="bg-[#333] hover:bg-[#444] px-4 py-2 rounded text-sm">Mayor sueldo</button>
       <button onclick="render('menor')" class="bg-[#333] hover:bg-[#444] px-4 py-2 rounded text-sm">Menor sueldo</button>
       <button onclick="abrirMapa()" class="bg-[#2563eb] hover:bg-[#1d4ed8] px-4 py-2 rounded text-sm">Localizar en el mapa</button>
+      <button  class="bg-[#333] hover:bg-[#444] px-4 py-2 rounded text-sm"><a target="_blank" href="cards.html">Equipo</a></button>
+      <button onclick="descargarJSON()" class="bg-[#333] hover:bg-[#444] px-4 py-2 rounded text-sm">Descargar JSON</button>
+      <button onclick="descargarCSV()" class="bg-[#333] hover:bg-[#444] px-4 py-2 rounded text-sm">Descargar CSV</button>
+      <button onclick="descargarExcel()" class="bg-[#333] hover:bg-[#444] px-4 py-2 rounded text-sm">Descargar Excel</button>
+
     </div>
     <button onclick="goBack()" class="text-sm text-gray-300 hover:text-white">Regresar al buscador</button>
   </header>
@@ -33,6 +38,65 @@
   </main>
 
   <script>
+
+
+function descargarJSON() {
+  if (!todasVacantes.length) return;
+  const blob = new Blob([JSON.stringify(todasVacantes, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  descargarArchivo(url, 'vacantes.json');
+}
+
+function descargarCSV() {
+  if (!todasVacantes.length) return;
+  const encabezados = ['Empresa', 'Sueldo', 'Ubicación', 'Modalidad'];
+  const filas = todasVacantes.map(v => {
+    const modalidad = v.detalles?.["Espacio de trabajo"] || 'Sin modalidad';
+    return [
+      `"${(v.empresa || '').replace(/"/g, '""')}"`,
+      `"${(v.sueldo || '').replace(/"/g, '""')}"`,
+      `"${(v.ubicacion || '').replace(/"/g, '""')}"`,
+      `"${modalidad.replace(/"/g, '""')}"`
+    ].join(',');
+  });
+
+  const csvContent = [encabezados.join(','), ...filas].join('\n');
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  descargarArchivo(url, 'vacantes.csv');
+}
+
+function descargarExcel() {
+  if (!todasVacantes.length) return;
+
+  const encabezados = ['Empresa', 'Sueldo', 'Ubicación', 'Modalidad'];
+  const filas = todasVacantes.map(v => {
+    const modalidad = v.detalles?.["Espacio de trabajo"] || 'Sin modalidad';
+    return [v.empresa || '', v.sueldo || '', v.ubicacion || '', modalidad];
+  });
+
+  const tabla = [encabezados, ...filas];
+  let contenido = '<table>';
+  tabla.forEach(fila => {
+    contenido += '<tr>' + fila.map(d => `<td>${d}</td>`).join('') + '</tr>';
+  });
+  contenido += '</table>';
+
+  const blob = new Blob([contenido], { type: 'application/vnd.ms-excel' });
+  const url = URL.createObjectURL(blob);
+  descargarArchivo(url, 'vacantes.xlsx');
+}
+
+function descargarArchivo(url, nombreArchivo) {
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = nombreArchivo;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
     let todasVacantes = [];
 
     async function getVacantes() {
