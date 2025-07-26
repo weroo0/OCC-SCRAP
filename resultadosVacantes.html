@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Vacantes encontradas</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-[#1a1a1a] text-white min-h-screen">
+  <!-- Header con botones de filtro -->
+  <header class="w-full px-6 py-4 bg-[#111] shadow-md flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <div class="flex flex-wrap gap-3">
+      <button onclick="render('todas')" class="bg-[#333] hover:bg-[#444] px-4 py-2 rounded text-sm">Todas</button>
+      <button onclick="render('mayor')" class="bg-[#333] hover:bg-[#444] px-4 py-2 rounded text-sm">Mayor sueldo</button>
+      <button onclick="render('menor')" class="bg-[#333] hover:bg-[#444] px-4 py-2 rounded text-sm">Menor sueldo</button>
+      <button onclick="abrirMapa()" class="bg-[#2563eb] hover:bg-[#1d4ed8] px-4 py-2 rounded text-sm">Localizar en el mapa</button>
+    </div>
+    <button onclick="goBack()" class="text-sm text-gray-300 hover:text-white">Regresar al buscador</button>
+  </header>
+
+  <!-- Contenido principal -->
+  <main class="p-6">
+
+
+    <!-- Contenedor horizontal de tarjetas -->
+    <div id="vacantesContainer" class="flex overflow-x-auto gap-4 py-4 px-1 snap-x snap-mandatory md:grid md:grid-cols-3 md:gap-6 md:overflow-visible">
+      <!-- Tarjetas se insertan aquí -->
+    </div>
+  </main>
+
+  <script>
+    let todasVacantes = [];
+
+    async function getVacantes() {
+      const res = await fetch('/resultados.json');
+      const data = await res.json();
+      return data.filter(v => v.sueldo && parseFloat(v.sueldo.replace(/[^\d.]/g, '')) > 0);
+    }
+
+    function parseSueldo(sueldo) {
+      if (!sueldo) return 0;
+      const match = sueldo.replace(/,/g, '').match(/\d+/);
+      return match ? parseInt(match[0], 10) : 0;
+    }
+
+    function createCard(v) {
+      const modalidad = v.detalles?.["Espacio de trabajo"] || 'Sin modalidad';
+      const icon = modalidad.toLowerCase().includes('casa') ? '🏠' :
+        modalidad.toLowerCase().includes('presencial') ? '🏢' : '📍';
+
+      return `
+        <div class="vacante-card shrink-0 snap-start w-[260px] p-4 rounded-lg shadow-md text-white"
+             style="backdrop-filter: blur(12px); background: rgba(255, 255, 255, 0.1);">
+          <div class="text-lg font-bold mb-1">${v.empresa || 'Empresa no disponible'}</div>
+          <div class="text-md font-semibold text-indigo-300 mb-1">${v.sueldo || 'Sueldo no disponible'}</div>
+          <div class="text-sm text-gray-300 mb-1">${v.ubicacion || 'Ubicación no disponible'}</div>
+          <div class="text-sm">${icon} ${modalidad}</div>
+        </div>
+      `;
+    }
+
+    async function render(filtro = 'todas') {
+      const contenedor = document.getElementById('vacantesContainer');
+
+      if (todasVacantes.length === 0) {
+        todasVacantes = await getVacantes();
+      }
+
+      if (!todasVacantes.length) {
+        contenedor.innerHTML = '<div class="text-white">No hay vacantes con sueldo.</div>';
+        return;
+      }
+
+      let vacantes = [...todasVacantes];
+      vacantes.sort((a, b) => parseSueldo(b.sueldo) - parseSueldo(a.sueldo));
+
+      const n = getCantidad(vacantes.length);
+
+      if (filtro === 'mayor') {
+        vacantes = vacantes.slice(0, n);
+      } else if (filtro === 'menor') {
+        vacantes = vacantes.reverse().slice(0, n);
+      }
+
+      contenedor.innerHTML = vacantes.map(createCard).join('');
+    }
+
+    function getCantidad(total) {
+      if (total > 30) return 10;
+      if (total >= 20) return 8;
+      if (total >= 10) return 5;
+      return Math.min(3, Math.floor(total / 2));
+    }
+
+    function goBack() {
+      window.location.href = 'index.html';
+      setTimeout(() => location.reload(), 200);
+    }
+
+    function abrirMapa() {
+      window.open('mapa.html', '_blank');
+    }
+
+    render();
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,70 @@
+
+body {
+  background-color: #1a1a1a;
+  color: #f0f0f0;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+#searchInput::placeholder {
+  color: #ccc;
+  opacity: 0.6;
+}
+
+#searchBtn {
+  display: none;
+}
+
+#searchBtn::before {
+  content: "🔍";
+}
+
+#searchBtn:hover {
+  background-color: #444;
+}
+
+.loaderr {
+  width: 30px;
+  height: 30px;
+  border: 4px solid #f0f0f0;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.fade-message {
+  opacity: 0;
+  animation: fadeIn 0.5s forwards;
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+  }
+}
+
+#verVacantesBtn {
+  background-color: #2d2d2d;
+  border: 1px solid #444;
+  color: white;
+  border-radius: 30px;
+  font-size: 1.1rem;
+  transition: background-color 0.3s ease;
+}
+
+#verVacantesBtn:hover {
+  background-color: #3d3d3d;
+}
+
+#cancelarBusquedaBtn {
+  background-color: #a11a1a;
+}
+
+#cancelarBusquedaBtn:hover {
+  background-color: #cc2b2b;
+}

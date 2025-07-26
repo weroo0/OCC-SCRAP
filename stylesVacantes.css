@@ -1,0 +1,107 @@
+/* Fondo animado con blur */
+body {
+  background: linear-gradient(135deg, #58a0c8, #dc3c22);
+  background-size: 300% 300%;
+  animation: backgroundAnimation 20s ease infinite;
+  color: white;
+  min-height: 100vh;
+}
+
+@keyframes backgroundAnimation {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Layout con menú lateral */
+.main-layout {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  min-height: 80vh;
+}
+
+/* Tabs laterales (filtros) */
+.sidebar {
+    position: sticky;
+    top:0;
+  width: 350px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around ;
+  padding: 1rem;
+  border-radius: 1rem;
+  backdrop-filter: blur(8px);
+  height: 36vw;
+  
+}
+
+.sidebar .filters {
+  display: flex;
+  flex-direction: column;
+  
+}
+
+.sidebar button {
+  color: white;
+  border: none;
+  padding: 0.75rem;
+  height: 140px;
+  font-weight: bold;
+  transition: background 0.3s ease;
+}
+
+.sidebar button:hover {
+  background: rgba(221, 221, 221, 0.2);
+}
+
+/* Botón de volver (sólo ícono) */
+.sidebar .back-button {
+  font-size: 1.8rem;
+  color: white;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  align-self: center;
+  transition: transform 0.3s ease;
+}
+
+
+
+/* Contenedor de vacantes */
+.content {
+  flex: 1;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Título centrado */
+.content h1 {
+  text-align: center;
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 2rem;
+}
+
+/* Tarjetas */
+#vacantesContainer .vacante-card {
+  background: white;
+  color: rgb(255, 255, 255);
+  border-radius: 1rem;
+  padding: 1rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+}
+
+#vacantesContainer .vacante-card:hover {
+  transform: translateY(-4px);
+}

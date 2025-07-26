@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Encuentra empleo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="min-h-screen">
+    <div class="flex flex-col items-center justify-center min-h-screen px-4">
+      <div class="w-full max-w-3xl rounded-lg p-8">
+        <h1 class="mb-8 text-2xl md:text-4xl font-bold text-center">
+          Buscador de empleos
+        </h1>
+
+        <form id="searchForm" class="flex flex-col sm:flex-row gap-4 mb-2">
+          <input
+            type="text"
+            id="searchInput"
+            placeholder="Ingresa el puesto que buscas..."
+            required
+            class="flex-1 px-4 py-3 text-lg text-white placeholder-white bg-[#2a2a2a] border border-[#444] rounded-md focus:outline-none"/>
+          <button
+            type="submit"
+            id="searchBtn"
+            class="w-12 h-12 bg-[#2e2e2e] text-white rounded-md flex items-center justify-center text-2xl transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed">
+          </button>
+        </form>
+        
+
+        <div id="enterHint" class="text-sm text-gray-400 mb-6 hidden">
+          Presiona Enter para buscar 
+        </div>
+
+        <div
+          id="status"
+          class="mt-6 text-lg text-center flex flex-col items-center gap-4"
+        ></div>
+
+        <button
+          id="verVacantesBtn"
+          onclick="window.location='resultadosVacantes.html'"
+          class="hidden mt-8 px-8 py-3 font-bold rounded-full"
+        >
+          Vacantes encontradas
+        </button>
+
+        <button
+          id="cancelarBusquedaBtn"
+          class="hidden mt-4 px-6 py-2 text-sm text-white rounded-full font-semibold transition-colors"
+        >
+          Cancelar búsqueda
+        </button>
+      </div>
+    </div>
+
+    <script>
+      const searchForm = document.getElementById("searchForm");
+      const searchInput = document.getElementById("searchInput");
+      const searchBtn = document.getElementById("searchBtn");
+      const status = document.getElementById("status");
+      const verVacantesBtn = document.getElementById("verVacantesBtn");
+
+      const enterHint = document.getElementById("enterHint");
+
+      searchInput.addEventListener("input", () => {
+        if (searchInput.value.trim() !== "") {
+          enterHint.classList.remove("hidden");
+        } else {
+          enterHint.classList.add("hidden");
+        }
+      });
+
+      searchForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const searchTerm = searchInput.value.trim();
+
+        if (!searchTerm) {
+          status.textContent = "Por favor ingresa un término de búsqueda";
+          return;
+        }
+
+        status.innerHTML = '<div class="loaderr"></div>';
+        searchBtn.disabled = true;
+        verVacantesBtn.classList.add("hidden");
+
+        try {
+          const response = await fetch("/search", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ searchTerm }),
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            status.innerHTML = `<div class="fade-message">${data.message}</div>`;
+            verVacantesBtn.classList.remove("hidden");
+          } else {
+            status.innerHTML = `<div class="fade-message">${
+              data.error || "Error al buscar vacantes"
+            }</div>`;
+          }
+        } catch (error) {
+          status.innerHTML = `<div class="fade-message">¡Oh no! Parece que no hay conexión, verifica que estés conectado.</div>`;
+        } finally {
+          searchBtn.disabled = false;
+        }
+      });
+    </script>
+  </body>
+</html>

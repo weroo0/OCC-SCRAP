@@ -1,0 +1,107 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Mapa de Vacantes</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    #map { height: 100vh; }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+
+  <script>
+    const estadosCoords = {
+  "Aguascalientes": [21.8853, -102.2916],
+  "Baja California": [32.5149, -117.0382],
+  "Baja California Sur": [24.1426, -110.3128],
+  "Campeche": [19.8301, -90.5349],
+  "Chiapas": [16.7597, -93.1136],
+  "Chihuahua": [28.6329957, -106.0691],
+  "CDMX": [19.4326, -99.1332],
+  "Coahuila": [25.4381, -100.9733],
+  "Colima": [19.2433, -103.725],
+  "Durango": [24.0277, -104.6532],
+  "Estado de México": [19.3574, -99.0681],
+  "Guadalajara": [20.6767, -103.3475],
+  "Guanajuato": [21.019, -101.2574],
+  "Guerrero": [17.5529, -99.5058],
+  "Hidalgo": [20.0911, -98.7624],
+  "Jalisco": [20.6597, -103.3496],
+  "Michoacán": [19.7008, -101.186],
+  "Morelos": [18.6813, -99.1013],
+  "Nayarit": [21.7514, -104.8455],
+  "Nuevo León": [25.6866, -100.3161],
+  "Oaxaca": [17.0732, -96.7266],
+  "Puebla": [19.0414, -98.2063],
+  "Querétaro": [20.5888, -100.3899],
+  "Quintana Roo": [18.5211, -88.296],
+  "San Luis Potosí": [22.1565, -100.9855],
+  "Sinaloa": [24.8091, -107.394],
+  "Sonora": [29.0729, -110.9559],
+  "Tabasco": [17.9869, -92.9303],
+  "Tamaulipas": [23.7417, -99.1562],
+  "Tlaxcala": [19.3139, -98.2399],
+  "Veracruz": [19.1738, -96.1342],
+  "Yucatán": [20.9674, -89.5926],
+  "Zacatecas": [22.7709, -102.5832]
+    };
+
+    const map = L.map('map').setView([23.6345, -102.5528], 5); // México centro
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    async function cargarVacantes() {
+  const res = await fetch('/resultados.json');
+  const vacantes = await res.json();
+
+  // Agrupar vacantes por estado
+  const vacantesPorEstado = {};
+
+  vacantes.forEach(v => {
+    const lugar = v.ubicacion || '';
+    const estadoClave = Object.keys(estadosCoords).find(key =>
+      lugar.toLowerCase().includes(key.toLowerCase())
+    );
+
+    if (estadoClave) {
+      if (!vacantesPorEstado[estadoClave]) {
+        vacantesPorEstado[estadoClave] = [];
+      }
+      vacantesPorEstado[estadoClave].push(v);
+    }
+  });
+
+  // Añadir marcadores desplazados si hay más de una vacante en el mismo estado
+  Object.entries(vacantesPorEstado).forEach(([estado, vacantes]) => {
+    const baseCoords = estadosCoords[estado];
+    const angleStep = (2 * Math.PI) / vacantes.length;
+    const radius = 0.05; // Separación en grados (~5 km)
+
+    vacantes.forEach((v, i) => {
+      const angle = i * angleStep;
+      const latOffset = Math.cos(angle) * radius;
+      const lngOffset = Math.sin(angle) * radius;
+      const lat = baseCoords[0] + latOffset;
+      const lng = baseCoords[1] + lngOffset;
+
+      L.marker([lat, lng]).addTo(map)
+        .bindPopup(`<b>${v.empresa || 'Empresa'}</b><br>${v.sueldo || 'Sueldo desconocido'}<br>${estado}`);
+    });
+  });
+}
+
+
+    cargarVacantes();
+  </script>
+</body>
+</html>
